@@ -28,7 +28,7 @@ type Artifact struct {
 	Code []byte
 }
 
-func ReadArtifact(path string) (*Artifact, error) {
+func (f *Framework)  ReadArtifact(path string) (*Artifact, error) {
 	_, filename, _, ok := runtime.Caller(0)
 	if !ok {
 		return nil, fmt.Errorf("unable to get the current filename")
@@ -139,7 +139,7 @@ func (c *Contract) SendTransaction(method string, args []interface{}, confidenti
 type Framework struct {
 	config *Config
 	rpc    *rpc.Client
-	clt    *sdk.Client
+	Clt    *sdk.Client
 }
 
 type Config struct {
@@ -150,12 +150,12 @@ type Config struct {
 
 func DefaultConfig() *Config {
 	return &Config{
-		KettleRPC:  "http://localhost:8545",
-		KettleAddr: common.HexToAddress("b5feafbdd752ad52afb7e1bd2e40432a485bbb7f"),
+		KettleRPC:  "https://rpc.rigil.suave.flashbots.net",
+		KettleAddr: common.HexToAddress("03493869959c866713c33669ca118e774a30a0e5"),
 
 		// This account is funded in both devnev networks
 		// address: 0xBE69d72ca5f88aCba033a063dF5DBe43a4148De0
-		FundedAccount: NewPrivKeyFromHex("91ab9a7e53c220e6210460b65a7a3bb2ca181412a8a7b43ff336b3df1737ce12"),
+		FundedAccount: NewPrivKeyFromHex("b2a626589787bac610d36b678f6c5878eb6ea39f7078df2f7560ce9ea5bd46ed"),
 	}
 }
 
@@ -168,18 +168,19 @@ func New() *Framework {
 	return &Framework{
 		config: DefaultConfig(),
 		rpc:    rpc,
-		clt:    clt,
+		Clt:    clt,
 	}
 }
 
 func (f *Framework) DeployContract(path string) *Contract {
-	artifact, err := ReadArtifact(path)
+	fmt.Printf("DEPLOYING!!")
+	artifact, err := f.ReadArtifact(path)
 	if err != nil {
 		panic(err)
 	}
 
 	// deploy contract
-	txnResult, err := sdk.DeployContract(artifact.Code, f.clt)
+	txnResult, err := sdk.DeployContract(artifact.Code, f.Clt)
 	if err != nil {
 		panic(err)
 	}
@@ -192,7 +193,7 @@ func (f *Framework) DeployContract(path string) *Contract {
 		panic(fmt.Errorf("transaction failed"))
 	}
 
-	contract := sdk.GetContract(receipt.ContractAddress, artifact.Abi, f.clt)
+	contract := sdk.GetContract(receipt.ContractAddress, artifact.Abi, f.Clt)
 	return &Contract{addr: receipt.ContractAddress, fr: f, abi: artifact.Abi, Contract: contract}
 }
 
@@ -213,7 +214,7 @@ func (f *Framework) NewClient(acct *PrivKey) *sdk.Client {
 }
 
 func (f *Framework) SignTx(priv *PrivKey, tx *types.LegacyTx) (*types.Transaction, error) {
-	rpc, _ := rpc.Dial("http://localhost:8545")
+	rpc, _ := rpc.Dial("https://rpc.rigil.suave.flashbots.net")
 
 	cltAcct1 := sdk.NewClient(rpc, priv.Priv, common.Address{})
 	signedTxn, err := cltAcct1.SignTxn(tx)
@@ -230,7 +231,7 @@ func (f *Framework) FundAccount(to common.Address, value *big.Int) error {
 		Value: value,
 		To:    &to,
 	}
-	result, err := f.clt.SendTransaction(txn)
+	result, err := f.Clt.SendTransaction(txn)
 	if err != nil {
 		return err
 	}
@@ -239,7 +240,7 @@ func (f *Framework) FundAccount(to common.Address, value *big.Int) error {
 		return err
 	}
 	// check balance
-	balance, err := f.clt.RPC().BalanceAt(context.Background(), to, nil)
+	balance, err := f.Clt.RPC().BalanceAt(context.Background(), to, nil)
 	if err != nil {
 		return err
 	}
