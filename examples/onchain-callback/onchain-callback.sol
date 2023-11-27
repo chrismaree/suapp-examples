@@ -4,11 +4,9 @@ pragma solidity ^0.8.8;
 import "../../suave-geth/suave/sol/libraries/Suave.sol";
 
 contract OnChainCallback {
-    event CallbackEvent (
-        uint256 num
-    );
+    event CallbackEvent(uint256 num);
 
-    event NilEvent ();
+    event NilEvent();
 
     function emitCallback(uint256 num) public {
         emit CallbackEvent(num);

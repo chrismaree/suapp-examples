@@ -10,12 +10,7 @@ contract ConfidentialStore {
         address[] memory allowedList = new address[](1);
         allowedList[0] = address(this);
 
-        Suave.Bid memory bid = Suave.newBid(
-            10,
-            allowedList,
-            allowedList,
-            "namespace"
-        );
+        Suave.Bid memory bid = Suave.newBid(10, allowedList, allowedList, "namespace");
 
         Suave.confidentialStore(bid.id, "key1", abi.encode(1));
         Suave.confidentialStore(bid.id, "key2", abi.encode(2));

@@ -12,10 +12,7 @@ contract OFAPrivate {
         bytes hint;
     }
 
-    event HintEvent (
-        Suave.BidId id,
-        bytes hint
-    );
+    event HintEvent(Suave.BidId id, bytes hint);
 
     // Internal function to save order details and generate a hint.
     function saveOrder() internal view returns (HintOrder memory) {
@@ -61,17 +58,16 @@ contract OFAPrivate {
         bids[0] = shareBidId;
         bids[1] = hintOrder.id;
         Suave.confidentialStore(hintOrder.id, "mevshare:v0:mergedBids", abi.encode(bids));
-        
+
         return abi.encodeWithSelector(this.emitHint.selector, hintOrder);
     }
 
-    function emitMatchBidAndHintCallback() external payable {
-    }
+    function emitMatchBidAndHintCallback() external payable {}
 
     function emitMatchBidAndHint(string memory builderUrl, Suave.BidId bidId) external payable returns (bytes memory) {
         bytes memory bundleData = Suave.fillMevShareBundle(bidId);
         Suave.submitBundleJsonRPC(builderUrl, "mev_sendBundle", bundleData);
-        
+
         return abi.encodeWithSelector(this.emitMatchBidAndHintCallback.selector);
     }
 }

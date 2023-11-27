@@ -5,7 +5,8 @@ import "../../suave-geth/suave/sol/libraries/Suave.sol";
 
 library UniswapV3 {
     address constant swapRouter = 0x68b3465833fb72A70ecDF485E0e4C7bD8665Fc45;
-    string constant exactOutputSingleSig = "exactOutputSingle((address,address,uint24,address,uint256,uint256,uint256,uint160))";
+    string constant exactOutputSingleSig =
+        "exactOutputSingle((address,address,uint24,address,uint256,uint256,uint256,uint160))";
 
     struct ExactOutputSingleParams {
         address tokenIn;
@@ -18,11 +19,7 @@ library UniswapV3 {
         uint160 sqrtPriceLimitX96;
     }
 
-    function exactOutputSingle(ExactOutputSingleParams memory params)
-        internal
-        view
-        returns (uint256 amountIn)
-    {
+    function exactOutputSingle(ExactOutputSingleParams memory params) internal view returns (uint256 amountIn) {
         bytes memory output = Suave.ethcall(swapRouter, abi.encodeWithSignature(exactOutputSingleSig, params));
         (uint256 num) = abi.decode(output, (uint64));
         return num;
@@ -30,8 +27,7 @@ library UniswapV3 {
 }
 
 contract ExternalUniswapV3Quote {
-    function callback() external payable {
-    }
+    function callback() external payable {}
 
     function example(UniswapV3.ExactOutputSingleParams memory params) external payable returns (bytes memory) {
         UniswapV3.exactOutputSingle(params);

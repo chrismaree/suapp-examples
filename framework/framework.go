@@ -149,13 +149,30 @@ type Config struct {
 }
 
 func DefaultConfig() *Config {
-	return &Config{
-		KettleRPC:  "https://rpc.rigil.suave.flashbots.net",
-		KettleAddr: common.HexToAddress("03493869959c866713c33669ca118e774a30a0e5"),
+	isRigid := false
 
-		// This account is funded in both devnev networks
-		// address: 0xBE69d72ca5f88aCba033a063dF5DBe43a4148De0
-		FundedAccount: NewPrivKeyFromHex("b2a626589787bac610d36b678f6c5878eb6ea39f7078df2f7560ce9ea5bd46ed"),
+	// Check if "--rigid" is among the command-line arguments
+	for _, arg := range os.Args[1:] {
+		if arg == "--rigil" {
+			isRigid = true
+			break
+		}
+	}
+
+	if isRigid {
+		fmt.Printf("Using rigid mode\n")
+		return &Config{
+			KettleRPC:     "https://rpc.rigil.suave.flashbots.net",
+			KettleAddr:    common.HexToAddress("03493869959c866713c33669ca118e774a30a0e5"),
+			FundedAccount: NewPrivKeyFromHex("b2a626589787bac610d36b678f6c5878eb6ea39f7078df2f7560ce9ea5bd46ed"),
+		}
+	}
+
+	fmt.Printf("Using localhost mode\n")
+	return &Config{
+		KettleRPC:     "http://localhost:8545",
+		KettleAddr:    common.HexToAddress("b5feafbdd752ad52afb7e1bd2e40432a485bbb7f"),
+		FundedAccount: NewPrivKeyFromHex("91ab9a7e53c220e6210460b65a7a3bb2ca181412a8a7b43ff336b3df1737ce12"),
 	}
 }
 
@@ -173,7 +190,7 @@ func New() *Framework {
 }
 
 func (f *Framework) DeployContract(path string) *Contract {
-	fmt.Printf("DEPLOYING!!")
+	fmt.Printf("Deploying %s\n", path)
 	artifact, err := f.ReadArtifact(path)
 	if err != nil {
 		panic(err)
